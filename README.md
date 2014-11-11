@@ -1,35 +1,32 @@
-angular-django-rest-resource
+angular-resource.ms
 ============================
 
 An AngularJS module that provides a resource-generation service similar to ngResource, but optimized for the
-Django REST Framework. The biggest features:
+Django REST Framework. Based on ngResource 1.3.x and [djResource](https://github.com/blacklocus/angular-django-rest-resource) The biggest features:
 
-* Trailing slashes allowed in the resource URLs per the Django community norm.
 * The `isArray` methods like `query` allow for paginated responses. The pages will be streamed into the promise object.
 
 Installation
 ------------
-Download angular-django-rest-resource.js and put it in your project. You may also do it the bower way:
-
-    bower install angular-django-rest-resource
+Download angular-resource.ms.js and put it in your project. 
 
 Usage
 -----
 Do this somewhere in your application HTML:
 
-    <script src="angular-django-rest-resource.js"></script>
+    <script src="angular-resource.ms.js"></script>
 
 Add this AngularJS module as a dependency to your AngularJS application:
 
-    angular.module('app', [..., 'djangoRESTResources']);
+    angular.module('app', [..., 'ngResource']);
 
 (where 'app' is whatever you've named your AngularJS application).
 
 
-In your controllers and anything that needs to interact with the Django REST Framework services, inject the `djResource`
+In your controllers and anything that needs to interact with the Django REST Framework services, inject the `$resource`
 service. Then you can create class-like objects that represent (and interact with) your Django REST Framework resources:
 
-    var Poll = djResource('/polls/:pollId/', {pollId:'@id'});
+    var Poll = $resource('/polls/:pollId/', {pollId:'@id'});
 
     var myPoll = Poll.get({pollId:86}, function() {
         myPoll.readByUser = true;
@@ -38,23 +35,3 @@ service. Then you can create class-like objects that represent (and interact wit
 
 For complete API, consider the documentation for [$resource](http://docs.angularjs.org/api/ngResource.$resource), as
 this module follows the API quite closely.
-
-Launching The Testing and Demonstration App
--------------------------------------------
-This is a work in progress, but it gives some hints on usage in a real world scenario.
-
-1. Create a Python virtualenv.
-2. Install the dependencies:
-
-        cd test
-        pip install -r requirements.txt
-
-3. Set up the database and fixtures (if first time use).
-
-        python manage.py syncdb
-
-4. Run the server:
-
-        python manage.py runserver
-
-5. Point web browser to `http://localhost:8000/`.
