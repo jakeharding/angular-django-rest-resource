@@ -2,7 +2,7 @@ angular-resource.ms
 ============================
 
 An AngularJS module that provides a resource-generation service similar to ngResource, but optimized for the
-Django REST Framework. Based on ngResource 1.3.x and [djResource](https://github.com/blacklocus/angular-django-rest-resource) The biggest features:
+Django REST Framework. Based on ngResource 1.3.x and [djResource](https://github.com/blacklocus/angular-django-rest-resource). The biggest features:
 
 * The `isArray` methods like `query` allow for paginated responses. The pages will be streamed into the promise object.
 
