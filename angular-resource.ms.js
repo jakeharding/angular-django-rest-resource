@@ -655,7 +655,8 @@ angular.module('ngResource', ['ng']).
                         promise = promise.then(
                             function(response) {
                                 var value = responseInterceptor(response);
-                                (success || noop)(value, response.headers);
+                                //this is called above if success is not deferred
+                                //(success || noop)(value, response.headers);
                                 return value;
                             },
                             responseErrorInterceptor);
