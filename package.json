@@ -1,6 +1,6 @@
 {
   "name": "angular-django-rest-resource",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An AngularJS module that provides a resource generation service optimized for Django REST Framework",
   "main": "angular-resource.ms.js",
   "scripts": {
