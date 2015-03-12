@@ -1,0 +1,24 @@
+{
+  "name": "angular-django-rest-resource",
+  "version": "1.0.0",
+  "description": "An AngularJS module that provides a resource generation service optimized for Django REST Framework",
+  "main": "angular-resource.ms.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mscienski/angular-django-rest-resource"
+  },
+  "keywords": [
+    "angular",
+    "django",
+    "ngresource"
+  ],
+  "author": "Michal Scienski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mscienski/angular-django-rest-resource/issues"
+  },
+  "homepage": "https://github.com/mscienski/angular-django-rest-resource"
+}
