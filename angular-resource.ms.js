@@ -1,3 +1,9 @@
+/**
+ * Portions of this file modified, used, or copied under permissions granted by the MIT license
+ * (c) 2010-2015 Google, Inc. http://angularjs.org
+ * https://github.com/blacklocus/angular-django-rest-resource
+ * License: MIT
+ */
 'use strict';
 
 var $resourceMinErr = angular.$$minErr('$resource');
@@ -111,7 +117,7 @@ function shallowClearAndCopy(src, dst) {
  *   example, if the `defaultParam` object is `{someParam: '@someProp'}` then the value of `someParam`
  *   will be `data.someProp`.
  *
- * @param {Object.<Object>=} actions Hash with declaration of custom action that should extend
+ * @param {Object.<Object>=} actions Hash with declaration of custom actions that should extend
  *   the default set of resource actions. The declaration should be created in the format of {@link
     *   ng.$http#usage $http.config}:
  *
@@ -207,6 +213,7 @@ function shallowClearAndCopy(src, dst) {
  *   - HTTP GET "class" actions: `Resource.action([parameters], [success], [error])`
  *   - non-GET "class" actions: `Resource.action([parameters], postData, [success], [error])`
  *   - non-GET instance actions:  `instance.$action([parameters], [success], [error])`
+ *
  *
  *   Success callback is called with (value, responseHeaders) arguments. Error callback is called
  *   with (httpResponse) argument.
@@ -553,7 +560,10 @@ angular.module('ngResource', ['ng']).
 
                         var isInstanceCall = this instanceof Resource;
                         var value = isInstanceCall ? data : (action.isArray ? [] : new Resource(data));
-                        var httpConfig = {};
+                        var httpConfig = {},
+                            promise,
+                            defer = $q.defer(),
+                            http;
                         var responseInterceptor = action.interceptor && action.interceptor.response ||
                             defaultResponseInterceptor;
                         var responseErrorInterceptor = action.interceptor && action.interceptor.responseError ||
@@ -570,18 +580,23 @@ angular.module('ngResource', ['ng']).
                             extend({}, extractParams(data, action.params || {}), params),
                             action.url);
 
-                        function markResolved() {value.$resolved = true;}
+                        function markResolved() {
+                            value.$resolved = true;
+                        }
 
-                        var promise = $http(httpConfig);
+                        promise = defer.promise;
+                        http = $http(httpConfig);
                         value.$resolved = false;
 
                         promise.then(markResolved, markResolved);
-                        value.$then = promise.then(function(response) {
+                        value.$then = promise.then;
+                        http.then(function(response) {
                             var data = response.data,
-                                promise = value.$promise,
                                 then = value.$then,
                                 resolved = value.$resolved,
-                                deferSuccess = false;
+                                promise = value.$promise,
+                                deferSuccess = false,
+                                inner = $q.defer();
 
                             if (data) {
                                 // Need to convert action.isArray to boolean in case it is undefined
@@ -599,22 +614,26 @@ angular.module('ngResource', ['ng']).
                                     //pagination container, not array
                                     if (data.hasOwnProperty('count') && data.hasOwnProperty('results')) {
                                         deferSuccess = true;
+
                                         var paginator = function recursivePaginator(data) {
                                             // If there is a next page, go ahead and request it before parsing our results. Less wasted time.
                                             if (data.next !== null) {
                                                 var next_config = copy(httpConfig);
                                                 next_config.params = {};
                                                 next_config.url = data.next;
-                                                $http(next_config).success(function(next_data) { recursivePaginator(next_data); }).error(error);
+                                                $http(next_config).success(function(next_data) {
+                                                    recursivePaginator(next_data);
+                                                }).error(error);
                                             }
                                             // Ok, now load this page's results:
-                                            forEach(data.results, function(item) {
+                                            forEach(data.results, function (item) {
                                                 value.push(new Resource(item));
                                             });
+
                                             if (data.next == null) {
-                                                // We've reached the last page, call the original success callback with the concatenated pages of data.
-                                                (success||noop)(value, response.headers);
+                                                inner.resolve();
                                             }
+
                                         };
                                         paginator(data);
                                     } else {
@@ -628,38 +647,43 @@ angular.module('ngResource', ['ng']).
                                                 value.push(item);
                                             }
                                         });
+                                        inner.resolve();
                                     }
                                 } else {
                                     shallowClearAndCopy(data, value);
                                     value.$then = then;
-                                    value.$resolved = resolved;
                                     value.$promise = promise;
+                                    inner.resolve();
                                 }
                             }
 
+                            value.$resolved = resolved;
+
                             if (!deferSuccess) {
-                                (success||noop)(value, response.headers);
+                                inner.resolve();
                             }
 
                             response.resource = value;
 
-                            return response;
+                            inner.promise.then(function() {
+                                defer.resolve(response);
+                            });
                         }, function(response) {
                             value.$resolved = true;
 
                             (error || noop)(response);
 
-                            return $q.reject(response);
+                            return defer.reject(response);
                         });
 
                         promise = promise.then(
-                            function(response) {
+                            function (response) {
                                 var value = responseInterceptor(response);
-                                //this is called above if success is not deferred
-                                //(success || noop)(value, response.headers);
+                                (success || noop)(value, response.headers);
                                 return value;
                             },
                             responseErrorInterceptor);
+
 
                         if (!isInstanceCall) {
                             // we are creating instance / collection
