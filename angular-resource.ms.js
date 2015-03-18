@@ -673,7 +673,7 @@ angular.module('ngResource', ['ng']).
 
                             (error || noop)(response);
 
-                            return defer.reject(response);
+                            defer.reject(response);
                         });
 
                         promise = promise.then(
